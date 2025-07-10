@@ -1,0 +1,17 @@
+<script>
+navigator.geolocation.getCurrentPosition(function(pos) {
+  const data = {
+    timestamp: new Date().toISOString(),
+    location: pos.coords.latitude + "," + pos.coords.longitude,
+    device: navigator.userAgent,
+    tagID: new URLSearchParams(window.location.search).get("tagID")
+  };
+
+  fetch("https://jouw_webhook_link_power_automate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+});
+</script>
+
