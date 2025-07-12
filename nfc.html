@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>NFC Scan</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+  </style>
 </head>
 <body>
-  <h2>Scan gestart...</h2>
-  <p>Gegevens worden verzameld en verzonden...</p>
+  <h2>📲 NFC Scan gestart...</h2>
+  <p>Gegevens worden verzameld en verzonden naar Google Sheet...</p>
 
   <script>
     navigator.geolocation.getCurrentPosition(function(pos) {
@@ -20,13 +23,15 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-      }).then(response => {
-        document.body.innerHTML = "<h3>✅ Gegevens verzonden!</h3>";
-      }).catch(err => {
-        document.body.innerHTML = "<h3>❌ Er ging iets mis.</h3>";
+      })
+      .then(res => {
+        document.body.innerHTML = "<h3>✅ Gegevens succesvol verzonden!</h3>";
+      })
+      .catch(err => {
+        document.body.innerHTML = "<h3>❌ Fout bij verzenden.</h3><p>" + err + "</p>";
       });
     }, function(error) {
-      document.body.innerHTML = "<h3>⚠️ Locatie niet beschikbaar.</h3>";
+      document.body.innerHTML = "<h3>⚠️ Locatie niet beschikbaar.</h3><p>Toestemming geweigerd of geen GPS beschikbaar.</p>";
     });
   </script>
 </body>
