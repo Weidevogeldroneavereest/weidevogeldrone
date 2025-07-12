@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NFC Scan</title>
+</head>
+<body>
+  <h2>Scan gestart...</h2>
+  <p>Gegevens worden verzameld en verzonden...</p>
+
+  <script>
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      const data = {
+        tagID: new URLSearchParams(window.location.search).get("tagID"),
+        location: pos.coords.latitude + "," + pos.coords.longitude,
+        device: navigator.userAgent
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbzBeW6UGlCXm63Nq2caU9xvFJ_ydxar8vCxL3TLV9dk/dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }).then(response => {
+        document.body.innerHTML = "<h3>✅ Gegevens verzonden!</h3>";
+      }).catch(err => {
+        document.body.innerHTML = "<h3>❌ Er ging iets mis.</h3>";
+      });
+    }, function(error) {
+      document.body.innerHTML = "<h3>⚠️ Locatie niet beschikbaar.</h3>";
+    });
+  </script>
+</body>
+</html>
