@@ -19,7 +19,7 @@
         device: navigator.userAgent
       };
 
-      fetch("https://https://script.google.com/macros/s/AKfycbzBeW6UGlCXm63Nq2caU9xvFJ_ydxar8vCxL3TLV9dk/dev", {
+      fetch("https://script.google.com/macros/s/AKfycbzBeW6UGlCXm63Nq2caU9xvFJ_ydxar8vCxL3TLV9dk/dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
@@ -36,6 +36,3 @@
   </script>
 </body>
 </html>
-function doGet(e) {
-  return ContentService.createTextOutput("📡 Web App klaar om gegevens via POST te ontvangen.");
-}
