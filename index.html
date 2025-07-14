@@ -2,14 +2,22 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>NFC Scan Logger</title>
+  <title>Scan Logger</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2em; background: #f5f5f5; }
+    h2 { color: #2c3e50; }
+    form { background: white; padding: 1em; border-radius: 8px; max-width: 400px; }
+    label, input, button { display: block; margin-top: 1em; width: 100%; }
+    button { padding: 0.5em; background: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    #status { margin-top: 1em; }
+  </style>
 </head>
 <body>
-  <h2>Scan geregistreerd</h2>
+  <h2>NFC Scan geregistreerd</h2>
   <form id="logForm">
-    <label>Naam of apparaatnaam:<br>
+    <label>Naam of apparaatnaam:
       <input type="text" id="deviceName" required>
-    </label><br><br>
+    </label>
     <button type="submit">Verstuur gegevens</button>
   </form>
   <p id="status"></p>
@@ -20,34 +28,33 @@
 
       const deviceName = document.getElementById('deviceName').value;
       const timestamp = new Date().toISOString();
-
       let lat = '', lon = '';
 
-      // Locatie ophalen met toestemming
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async function(position) {
           lat = position.coords.latitude;
           lon = position.coords.longitude;
-
           await sendToSheet(deviceName, timestamp, lat, lon);
         }, function() {
           document.getElementById('status').textContent = 'Locatie niet beschikbaar';
+          sendToSheet(deviceName, timestamp, '', '');
         });
       } else {
         document.getElementById('status').textContent = 'Geolocatie wordt niet ondersteund';
+        sendToSheet(deviceName, timestamp, '', '');
       }
     });
 
     async function sendToSheet(name, time, latitude, longitude) {
-      const url = 'https://script.google.com/macros/s/AKfycbywFONw7VpHncoTg6pU6s93ffySvePSXT0uJNCP_M8/dev';
+      const url = 'JOUW_WEBHOOK_URL_HIER'; // Vervang dit met je echte URL
       const data = {
         naam: name,
         tijd: time,
-        locatie: `(${latitude}, ${longitude})`
+        locatie: latitude && longitude ? `${latitude}, ${longitude}` : 'Onbekend'
       };
 
       try {
-        const response = await fetch(url, {
+        await fetch(url, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
