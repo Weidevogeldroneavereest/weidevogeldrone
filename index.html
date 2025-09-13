@@ -1,99 +1,52 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8" />
-  <title>Weidevogeldrone Scan</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      padding: 2em;
-    }
-    form {
-      background: #fff;
-      padding: 1.5em;
-      border-radius: 8px;
-      max-width: 400px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-      margin-top: 1em;
-      width: 100%;
-      padding: 0.7em;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #2980b9;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #status {
-      margin-top: 1em;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h2>Scanregistratie</h2>
-  <form id="logForm">
-    <label>Naam:
-      <input type="text" id="deviceName" required />
-    </label>
-    <button type="submit">Verstuur gegevens</button>
-  </form>
-  <p id="status"></p>
+<script>
+  document.getElementById('logForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-  <script>
-    document.getElementById('logForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+    const name = document.getElementById('deviceName').value;
+    const isoTime = new Date().toISOString();
+    let lat = '', lon = '';
 
-      const name = document.getElementById('deviceName').value;
-      const isoTime = new Date().toISOString();
-      let lat = '', lon = '';
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async position => {
-          lat = position.coords.latitude;
-          lon = position.coords.longitude;
-          await sendToSheet(name, isoTime, lat, lon);
-        }, () => {
-          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-          sendToSheet(name, isoTime, '', '');
-        });
-      } else {
-        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async position => {
+        lat = position.coords.latitude;
+        lon = position.coords.longitude;
+        console.log("📍 Locatie opgehaald:", lat, lon);
+        await sendToSheet(name, isoTime, lat, lon);
+      }, () => {
+        document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
+        console.warn("⚠️ Geolocatie mislukt");
         sendToSheet(name, isoTime, '', '');
-      }
-    });
-
-    async function sendToSheet(name, time, lat, lon) {
-      const url = 'https://script.google.com/macros/s/AKfycbybHQrNWIhgXxyN-q8mkGm_0n1dGeoEgqmne8Kmms1uLL7zMgHC21EylWEVjTtR41A2/exec';
-
-      const payload = {
-        naam: name,
-        tijd: time,
-        locatie: lat && lon ? `${lat}, ${lon}` : ''
-      };
-
-      try {
-        await fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        document.getElementById('status').textContent = '✅ Gegevens verstuurd!';
-      } catch (error) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden';
-      }
+      });
+    } else {
+      document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+      console.warn("⚠️ Geolocatie niet ondersteund door browser");
+      sendToSheet(name, isoTime, '', '');
     }
-  </script>
-</body>
-</html>
+  });
 
+  async function sendToSheet(name, time, lat, lon) {
+    const url = 'https://script.google.com/macros/s/AKfycbybHQrNWIhgXxyN-q8mkGm_0n1dGeoEgqmne8Kmms1uLL7zMgHC21EylWEVjTtR41A2/exec';
 
+    const payload = {
+      naam: name,
+      tijd: time,
+      locatie: lat && lon ? `${lat}, ${lon}` : ''
+    };
 
+    console.log("📦 Payload naar Google Script:", payload);
 
-
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('status').textContent = '✅ Gegevens verstuurd!';
+      console.log("✅ Verzoek verzonden");
+    } catch (error) {
+      document.getElementById('status').textContent = '❌ Fout bij verzenden';
+      console.error("❌ Fout bij fetch:", error);
+    }
+  }
+</script>
