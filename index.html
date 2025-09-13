@@ -46,34 +46,49 @@
   <p id="status"></p>
 
   <script>
-    console.log("✅ Script geladen");
+    document.getElementById('logForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    document.addEventListener('DOMContentLoaded', function () {
-      document.getElementById('logForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        console.log("📨 Formulier verzonden");
+      const name = document.getElementById('deviceName').value;
+      const isoTime = new Date().toISOString();
+      let lat = '', lon = '';
 
-        const name = document.getElementById('deviceName').value;
-        const isoTime = new Date().toISOString();
-        let lat = '', lon = '';
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(async position => {
-            lat = position.coords.latitude;
-            lon = position.coords.longitude;
-            console.log("📍 Locatie opgehaald:", lat, lon);
-            await sendToSheet(name, isoTime, lat, lon);
-          }, () => {
-            document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-            console.warn("⚠️ Geolocatie mislukt");
-            sendToSheet(name, isoTime, '', '');
-          });
-        } else {
-          document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
-          console.warn("⚠️ Geolocatie niet ondersteund door browser");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+          await sendToSheet(name, isoTime, lat, lon);
+        }, () => {
+          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
           sendToSheet(name, isoTime, '', '');
-        }
-      });
+        });
+      } else {
+        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+        sendToSheet(name, isoTime, '', '');
+      }
     });
 
-    async function sendToSheet(name
+    async function sendToSheet(name, time, lat, lon) {
+      const url = 'https://script.google.com/macros/s/AKfycbybHQrNWIhgXxyN-q8mkGm_0n1dGeoEgqmne8Kmms1uLL7zMgHC21EylWEVjTtR41A2/exec';
+
+      const payload = {
+        naam: name,
+        tijd: time,
+        locatie: lat && lon ? `${lat}, ${lon}` : ''
+      };
+
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        document.getElementById('status').textContent = '✅ Gegevens verstuurd!';
+      } catch (error) {
+        document.getElementById('status').textContent = '❌ Fout bij verzenden';
+      }
+    }
+  </script>
+</body>
+</html>
