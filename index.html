@@ -46,37 +46,26 @@
   <p id="status"></p>
 
   <script>
-    console.log("✅ Script geladen");
+    document.getElementById('logForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    document.addEventListener('DOMContentLoaded', function () {
-      // Zet focus handmatig zodra DOM geladen is
-      document.getElementById('deviceName').focus();
+      const name = document.getElementById('deviceName').value;
+      const isoTime = new Date().toISOString();
+      let lat = '', lon = '';
 
-      document.getElementById('logForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        console.log("📨 Formulier verzonden");
-
-        const name = document.getElementById('deviceName').value;
-        const isoTime = new Date().toISOString();
-        let lat = '', lon = '';
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(async position => {
-            lat = position.coords.latitude;
-            lon = position.coords.longitude;
-            console.log("📍 Locatie opgehaald:", lat, lon);
-            await sendToSheet(name, isoTime, lat, lon);
-          }, () => {
-            document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-            console.warn("⚠️ Geolocatie mislukt");
-            sendToSheet(name, isoTime, '', '');
-          });
-        } else {
-          document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
-          console.warn("⚠️ Geolocatie niet ondersteund door browser");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+          await sendToSheet(name, isoTime, lat, lon);
+        }, () => {
+          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
           sendToSheet(name, isoTime, '', '');
-        }
-      });
+        });
+      } else {
+        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+        sendToSheet(name, isoTime, '', '');
+      }
     });
 
     async function sendToSheet(name, time, lat, lon) {
@@ -88,8 +77,6 @@
         locatie: lat && lon ? `${lat}, ${lon}` : ''
       };
 
-      console.log("📦 Payload naar Google Script:", payload);
-
       try {
         await fetch(url, {
           method: 'POST',
@@ -98,13 +85,10 @@
           body: JSON.stringify(payload)
         });
         document.getElementById('status').textContent = '✅ Gegevens verstuurd!';
-        console.log("✅ Verzoek verzonden");
       } catch (error) {
         document.getElementById('status').textContent = '❌ Fout bij verzenden';
-        console.error("❌ Fout bij fetch:", error);
       }
     }
   </script>
 </body>
 </html>
-
