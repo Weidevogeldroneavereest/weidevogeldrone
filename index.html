@@ -69,7 +69,7 @@
     });
 
     async function sendToSheet(name, time, lat, lon) {
-      const url = 'https://script.google.com/macros/s/AKfycbybHQrNWIhgXxyN-q8mkGm_0n1dGeoEgqmne8Kmms1uLL7zMgHC21EylWEVjTtR41A2/exec';
+      const url = 'https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec';
 
       const payload = {
         naam: name,
@@ -77,6 +77,38 @@
         locatie: lat && lon ? `${lat}, ${lon}` : ''
       };
 
+
+      const params = new URLSearchParams();
+      params.append("naam", name);
+      params.append("tijd", time);
+      params.append("locatie", lat && lon ? `${lat},${lon}` : '');
+
+      // GET request sent to https://example.org/login?username=example
+      
+      try { 
+      const response = await fetch(`${url}?${params}`, {
+          method: 'GET',
+          mode: 'no-cors',
+          headers: {
+              'X-Fetch-Location': 'true',
+              'Accept': 'text/html'
+          }
+          });
+        if (response.ok != 0) {
+          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+          //document.getElementById('status').textContent = `Response status: ${response.status} Response message: ${response.message}`;
+        } else {
+          document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+          //document.getElementById('status').textContent = `OK: ${response.status};`
+        }
+      } catch (error) {
+          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+          //document.getElementById('status').textContent = `Error message: ${error.message}`;
+      }
+
+      
+
+/*
       try {
         await fetch(url, {
           method: 'POST',
@@ -84,10 +116,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        document.getElementById('status').textContent = '✅ Gegevens verstuurd!';
+        document.getElementById('status').textContent = '✅ Gegevens verstuurd: name: ' + name + ' time: ' + time + ' lat: ' + lat + ' lon: ' + lon;
       } catch (error) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden';
+        document.getElementById('status').textContent = '❌ Fout bij verzenden' + error;
       }
+*/
     }
   </script>
 </body>
