@@ -5,35 +5,68 @@
   <title>Weidevogel registratie</title>
 
   <style>
-    body { font-family: Arial; background: #f0f4f8; padding: 2em; }
-    form { background: #fff; padding: 1.5em; border-radius: 8px; max-width: 450px; margin: auto; }
-    input, select, textarea, button {
-      margin-top: 1em; width: 100%; padding: 0.7em; border-radius: 4px; border: 1px solid #ccc;
+    body { 
+      font-family: Arial; 
+      background: #f0f4f8; 
+      padding: 2em; 
+      font-size: 1.4em; /* ✔ grotere basislettergrootte */
     }
-    button { background-color: #2980b9; color: white; border: none; cursor: pointer; }
 
-    /* ✔ Mobielvriendelijke velden */
+    form { 
+      background: #fff; 
+      padding: 2em; 
+      border-radius: 12px; 
+      max-width: 500px; 
+      margin: auto; 
+    }
+
+    input, select, textarea, button {
+      margin-top: 1.2em; 
+      width: 100%; 
+      padding: 1em; 
+      border-radius: 8px; 
+      border: 1px solid #ccc;
+      font-size: 1.3em; /* ✔ grotere velden */
+    }
+
+    button { 
+      background-color: #2980b9; 
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 1.4em; /* ✔ grotere knop */
+      padding: 1em;
+    }
+
+    label {
+      font-size: 1.3em; /* ✔ grotere labels */
+    }
+
+    /* ✔ Mobielvriendelijk */
     @media (max-width: 600px) {
-      input, select, textarea, button { font-size: 1.3em; padding: 1em; }
-      form { padding: 2em; }
-      label { font-size: 1.2em; }
+      body { font-size: 1.5em; }
+      form { padding: 2.5em; }
+      input, select, textarea, button { font-size: 1.5em; padding: 1.2em; }
+      label { font-size: 1.4em; }
     }
 
     /* ✔ Gecentreerde banner */
     #status {
       text-align: center;
       margin-top: 1.5em;
-      font-size: 1.3em;
-      padding: 0.8em;
-      border-radius: 6px;
-      display: none; /* pas tonen wanneer nodig */
+      font-size: 1.4em; /* ✔ grotere bannertekst */
+      padding: 1em;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      display: none;
     }
 
     /* ✔ Groene succesbanner */
     #status.success {
       background-color: #d4f8d4;
       color: #0a7a0a;
-      border: 1px solid #0a7a0a;
+      border: 2px solid #0a7a0a;
       display: block;
     }
 
@@ -41,15 +74,15 @@
     #status.error {
       background-color: #f8d4d4;
       color: #7a0a0a;
-      border: 1px solid #7a0a0a;
+      border: 2px solid #7a0a0a;
       display: block;
     }
 
-    /* ✔ Gele waarschuwing (GPS niet beschikbaar) */
+    /* ✔ Gele waarschuwing */
     #status.warning {
       background-color: #fff4c2;
       color: #7a6a00;
-      border: 1px solid #7a6a00;
+      border: 2px solid #7a6a00;
       display: block;
     }
   </style>
@@ -57,7 +90,7 @@
 
 <body>
 
-<h2 style="text-align:center;">Scanregistratie</h2>
+<h2 style="text-align:center; font-size: 1.8em;">Scanregistratie</h2>
 
 <form id="logForm">
 
@@ -89,4 +122,87 @@
 document.getElementById('logForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  const status = document.getElementById('
+  const status = document.getElementById('status');
+  status.className = "";
+  status.style.display = "none";
+
+  const name = document.getElementById('deviceName').value.trim();
+  const type = document.getElementById('typeRegistratie').value;
+  const note = document.getElementById('opmerkingen').value.trim();
+  const isoTime = new Date().toISOString();
+
+  if (!name) {
+    status.textContent = "❌ Naam is verplicht";
+    status.className = "error";
+    return;
+  }
+
+  if (!type) {
+    status.textContent = "❌ Type is verplicht";
+    status.className = "error";
+    return;
+  }
+
+  let attempts = 0;
+  let lat = null, lon = null, accuracy = null;
+
+  function getGPS() {
+    return new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve(pos),
+        err => resolve(null),
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+      );
+    });
+  }
+
+  while (attempts < 3 && lat === null) {
+    const pos = await getGPS();
+    if (pos) {
+      lat = pos.coords.latitude;
+      lon = pos.coords.longitude;
+      accuracy = pos.coords.accuracy;
+
+      if (!accuracy || accuracy > 100) {
+        accuracy = "";
+      }
+    }
+    attempts++;
+  }
+
+  if (!lat || !lon) {
+    status.textContent = "⚠️ GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
+    status.className = "warning";
+  }
+
+  await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
+});
+
+async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
+  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
+
+  const params = new URLSearchParams();
+  params.append("naam", name);
+  params.append("tijd", time);
+  params.append("locatie", lat && lon ? `${lat},${lon}` : "");
+  params.append("accuracy", accuracy || "");
+  params.append("type", type);
+  params.append("opmerkingen", note);
+
+  try {
+    await fetch(`${url}?${params.toString()}`, { method: 'GET' });
+
+    const status = document.getElementById('status');
+    status.textContent = "✅ Gegevens verstuurd";
+    status.className = "success";
+
+  } catch (error) {
+    const status = document.getElementById('status');
+    status.textContent = "❌ Fout bij verzenden";
+    status.className = "error";
+  }
+}
+</script>
+
+</body>
+</html>
