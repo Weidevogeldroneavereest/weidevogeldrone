@@ -5,28 +5,29 @@
   <title>Weidevogel registratie</title>
 
   <style>
+    /* ✔ Grote basislettergrootte voor alles */
     body { 
       font-family: Arial; 
       background: #f0f4f8; 
       padding: 2em; 
-      font-size: 1.4em; /* ✔ grotere basislettergrootte */
+      font-size: 1.6em; 
     }
 
     form { 
       background: #fff; 
-      padding: 2em; 
-      border-radius: 12px; 
-      max-width: 500px; 
+      padding: 2.5em; 
+      border-radius: 14px; 
+      max-width: 550px; 
       margin: auto; 
     }
 
     input, select, textarea, button {
-      margin-top: 1.2em; 
+      margin-top: 1.4em; 
       width: 100%; 
-      padding: 1em; 
-      border-radius: 8px; 
+      padding: 1.2em; 
+      border-radius: 10px; 
       border: 1px solid #ccc;
-      font-size: 1.3em; /* ✔ grotere velden */
+      font-size: 1.6em; /* ✔ gelijk aan de rest */
     }
 
     button { 
@@ -34,29 +35,29 @@
       color: white; 
       border: none; 
       cursor: pointer; 
-      font-size: 1.4em; /* ✔ grotere knop */
+      font-size: 1.7em; 
       padding: 1em;
     }
 
     label {
-      font-size: 1.3em; /* ✔ grotere labels */
+      font-size: 1.6em; /* ✔ gelijk aan invulvelden */
     }
 
     /* ✔ Mobielvriendelijk */
     @media (max-width: 600px) {
-      body { font-size: 1.5em; }
-      form { padding: 2.5em; }
-      input, select, textarea, button { font-size: 1.5em; padding: 1.2em; }
-      label { font-size: 1.4em; }
+      body { font-size: 1.7em; }
+      form { padding: 3em; }
+      input, select, textarea, button { font-size: 1.7em; padding: 1.3em; }
+      label { font-size: 1.7em; }
     }
 
     /* ✔ Gecentreerde banner */
     #status {
       text-align: center;
       margin-top: 1.5em;
-      font-size: 1.4em; /* ✔ grotere bannertekst */
+      font-size: 1.6em;
       padding: 1em;
-      border-radius: 8px;
+      border-radius: 10px;
       width: 100%;
       box-sizing: border-box;
       display: none;
@@ -90,7 +91,7 @@
 
 <body>
 
-<h2 style="text-align:center; font-size: 1.8em;">Scanregistratie</h2>
+<h2 style="text-align:center; font-size: 2.2em;">Scanregistratie</h2>
 
 <form id="logForm">
 
@@ -179,7 +180,7 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 });
 
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
-  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
+  const url = "HIER_JOUW_NIEUWE_EXEC_URL_PLAATSEN";
 
   const params = new URLSearchParams();
   params.append("naam", name);
