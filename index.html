@@ -3,6 +3,84 @@
 <head>
   <meta charset="UTF-8" />
   <title>Weidevogel registratie</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 2em;
+      margin: 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 1.5em;
+      border-radius: 10px;
+      max-width: 450px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-size: 1.1em;
+      display: block;
+      margin-top: 1em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7em;
+      margin-top: 0.4em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.9em;
+      margin-top: 1.5em;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1f6a94;
+    }
+
+    /* ⭐ Terugmelding gecentreerd */
+    #status {
+      margin-top: 1.5em;
+      font-size: 1.1em;
+      padding: 0.8em;
+      border-radius: 6px;
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #eef2f5;
+      border-left: 4px solid #2980b9;
+      text-align: center;   /* ⭐ CENTREREN */
+    }
+
+    /* ⭐ Mobielvriendelijk */
+    @media (max-width: 600px) {
+      body { padding: 1em; }
+      form { padding: 1.2em; }
+      label { font-size: 1.2em; }
+      input, select, textarea { font-size: 1.2em; padding: 1em; }
+      button { font-size: 1.2em; padding: 1em; }
+      #status { font-size: 1.2em; }
+    }
+  </style>
 </head>
 
 <body>
@@ -13,7 +91,7 @@
 
   <label>Naam:
     <input type="text" id="deviceName" required />
-  </label><br><br>
+  </label>
 
   <label>Type registratie:
     <select id="typeRegistratie" required>
@@ -24,11 +102,11 @@
       <option value="Overig">Overig</option>
       <option value="Test">Test</option>
     </select>
-  </label><br><br>
+  </label>
 
   <label>Opmerkingen:
     <textarea id="opmerkingen" rows="3"></textarea>
-  </label><br><br>
+  </label>
 
   <button type="submit">Verstuur gegevens</button>
 </form>
@@ -90,7 +168,6 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
 
-  /* ⭐ JOUW ACTIEVE URL */
   const url = "https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec";
 
   const params = new URLSearchParams();
