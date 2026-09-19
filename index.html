@@ -16,7 +16,7 @@
       max-width: 400px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    input, button {
+    input, select, textarea, button {
       margin-top: 1em;
       width: 100%;
       padding: 0.7em;
@@ -37,12 +37,30 @@
 </head>
 <body>
   <h2>Scanregistratie</h2>
+
   <form id="logForm">
     <label>Naam:
       <input type="text" id="deviceName" required />
     </label>
+
+    <label>Type registratie:
+      <select id="typeRegistratie" required>
+        <option value="">-- Kies type --</option>
+        <option value="Weidevogels">Weidevogels</option>
+        <option value="Reekalveren/hazen">Reekalveren/hazen</option>
+        <option value="Hoornaars">Hoornaars</option>
+        <option value="Overig">Overig</option>
+        <option value="Test">Test</option>
+      </select>
+    </label>
+
+    <label>Opmerkingen:
+      <textarea id="opmerkingen" rows="3" placeholder="Extra informatie..."></textarea>
+    </label>
+
     <button type="submit">Verstuur gegevens</button>
   </form>
+
   <p id="status"></p>
 
   <script>
@@ -50,6 +68,9 @@
       e.preventDefault();
 
       const name = document.getElementById('deviceName').value;
+      const type = document.getElementById('typeRegistratie').value;
+      const note = document.getElementById('opmerkingen').value;
+
       const isoTime = new Date().toISOString();
       let lat = '', lon = '';
 
@@ -57,70 +78,41 @@
         navigator.geolocation.getCurrentPosition(async position => {
           lat = position.coords.latitude;
           lon = position.coords.longitude;
-          await sendToSheet(name, isoTime, lat, lon);
+          await sendToSheet(name, isoTime, lat, lon, type, note);
         }, () => {
           document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-          sendToSheet(name, isoTime, '', '');
+          sendToSheet(name, isoTime, '', '', type, note);
         });
       } else {
         document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
-        sendToSheet(name, isoTime, '', '');
+        sendToSheet(name, isoTime, '', '', type, note);
       }
     });
 
-    async function sendToSheet(name, time, lat, lon) {
+    async function sendToSheet(name, time, lat, lon, type, note) {
       const url = 'https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec';
-
-      const payload = {
-        naam: name,
-        tijd: time,
-        locatie: lat && lon ? `${lat}, ${lon}` : ''
-      };
-
 
       const params = new URLSearchParams();
       params.append("naam", name);
       params.append("tijd", time);
       params.append("locatie", lat && lon ? `${lat},${lon}` : '');
+      params.append("type", type);
+      params.append("opmerkingen", note);
 
-      // GET request sent to https://example.org/login?username=example
-      
       try { 
-      const response = await fetch(`${url}?${params}`, {
+        const response = await fetch(`${url}?${params}`, {
           method: 'GET',
           mode: 'no-cors',
           headers: {
-              'X-Fetch-Location': 'true',
-              'Accept': 'text/html'
+            'X-Fetch-Location': 'true',
+            'Accept': 'text/html'
           }
-          });
-        if (response.ok != 0) {
-          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
-          //document.getElementById('status').textContent = `Response status: ${response.status} Response message: ${response.message}`;
-        } else {
-          document.getElementById('status').textContent = '✅ Gegevens verstuurd';
-          //document.getElementById('status').textContent = `OK: ${response.status};`
-        }
-      } catch (error) {
-          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
-          //document.getElementById('status').textContent = `Error message: ${error.message}`;
-      }
-
-      
-
-/*
-      try {
-        await fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
         });
-        document.getElementById('status').textContent = '✅ Gegevens verstuurd: name: ' + name + ' time: ' + time + ' lat: ' + lat + ' lon: ' + lon;
+
+        document.getElementById('status').textContent = '✅ Gegevens verstuurd';
       } catch (error) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden' + error;
+        document.getElementById('status').textContent = '❌ Fout bij verzenden';
       }
-*/
     }
   </script>
 </body>
