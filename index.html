@@ -13,8 +13,9 @@
       background: #fff;
       padding: 1.5em;
       border-radius: 8px;
-      max-width: 400px;
+      max-width: 450px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin: auto;
     }
     input, select, textarea, button {
       margin-top: 1em;
@@ -22,6 +23,7 @@
       padding: 0.7em;
       border-radius: 4px;
       border: 1px solid #ccc;
+      font-size: 1em;
     }
     button {
       background-color: #2980b9;
@@ -32,11 +34,26 @@
     #status {
       margin-top: 1em;
       font-weight: bold;
+      text-align: center;
+    }
+
+    /* 📱 Mobielvriendelijke weergave */
+    @media (max-width: 600px) {
+      input, select, textarea, button {
+        font-size: 1.3em;
+        padding: 1em;
+      }
+      form {
+        padding: 2em;
+      }
+      label {
+        font-size: 1.2em;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Scanregistratie</h2>
+  <h2 style="text-align:center;">Scanregistratie</h2>
 
   <form id="logForm">
     <label>Naam:
@@ -67,51 +84,76 @@
     document.getElementById('logForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const name = document.getElementById('deviceName').value;
+      const name = document.getElementById('deviceName').value.trim();
       const type = document.getElementById('typeRegistratie').value;
-      const note = document.getElementById('opmerkingen').value;
-
+      const note = document.getElementById('opmerkingen').value.trim();
       const isoTime = new Date().toISOString();
-      let lat = '', lon = '';
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async position => {
-          lat = position.coords.latitude;
-          lon = position.coords.longitude;
-          await sendToSheet(name, isoTime, lat, lon, type, note);
-        }, () => {
-          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-          sendToSheet(name, isoTime, '', '', type, note);
-        });
-      } else {
-        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
-        sendToSheet(name, isoTime, '', '', type, note);
+      // 🔒 Validatie
+      if (!name) {
+        document.getElementById('status').textContent = "❌ Naam is verplicht";
+        return;
       }
+      if (!type) {
+        document.getElementById('status').textContent = "❌ Kies een type registratie";
+        return;
+      }
+
+      // 📍 GPS ophalen met retry
+      let attempts = 0;
+      let lat = null, lon = null, accuracy = null;
+
+      function getGPS() {
+        return new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            pos => resolve(pos),
+            err => resolve(null),
+            { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+          );
+        });
+      }
+
+      while (attempts < 3 && lat === null) {
+        const pos = await getGPS();
+        if (pos) {
+          lat = pos.coords.latitude;
+          lon = pos.coords.longitude;
+          accuracy = pos.coords.accuracy;
+        }
+        attempts++;
+      }
+
+      if (!lat || !lon) {
+        document.getElementById('status').textContent =
+          "⚠️ GPS niet gevonden na 3 pogingen — registratie wordt toch verstuurd";
+      }
+
+      await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
     });
 
-    async function sendToSheet(name, time, lat, lon, type, note) {
+    async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
       const url = 'https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec';
 
       const params = new URLSearchParams();
       params.append("naam", name);
       params.append("tijd", time);
-      params.append("locatie", lat && lon ? `${lat},${lon}` : '');
+      params.append("locatie", lat && lon ? `${lat},${lon}` : "");
+      params.append("accuracy", accuracy || "");
       params.append("type", type);
       params.append("opmerkingen", note);
 
-      try { 
-        const response = await fetch(`${url}?${params}`, {
+      try {
+        await fetch(`${url}?${params}`, {
           method: 'GET',
-          mode: 'no-cors',
-          headers: {
-            'X-Fetch-Location': 'true',
-            'Accept': 'text/html'
-          }
+          mode: 'no-cors'
         });
 
-        document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+        document.getElementById('status').textContent =
+          '✅ Gegevens verstuurd via GitHub pagina';
+
       } catch (error) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden';
+        document.getElementById('status').textContent =
+          '❌ Fout bij verzenden';
       }
     }
   </script>
