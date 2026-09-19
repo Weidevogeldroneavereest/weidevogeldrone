@@ -27,29 +27,29 @@
     }
 
     label {
-      font-size: 1.2em;
+      font-size: 1.1em;
       display: block;
       margin-top: 1em;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 0.9em;
+      padding: 0.7em;
       margin-top: 0.4em;
       border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 1.1em;
+      font-size: 1em;
     }
 
     button {
       width: 100%;
-      padding: 1em;
+      padding: 0.9em;
       margin-top: 1.5em;
       background-color: #2980b9;
       color: white;
       border: none;
       border-radius: 6px;
-      font-size: 1.2em;
+      font-size: 1.1em;
       cursor: pointer;
     }
 
@@ -57,10 +57,10 @@
       background-color: #1f6a94;
     }
 
-    /* ⭐ Meldingsbalk pas zichtbaar wanneer nodig */
+    /* ⭐ Terugmelding gecentreerd */
     #status {
       margin-top: 1.5em;
-      font-size: 1.2em;
+      font-size: 1.1em;
       padding: 0.8em;
       border-radius: 6px;
       max-width: 450px;
@@ -68,17 +68,17 @@
       margin-right: auto;
       background: #eef2f5;
       border-left: 4px solid #2980b9;
-      text-align: center;
-      display: none; /* ⭐ VERBERGEN TOT ER EEN MELDING IS */
+      text-align: center;   /* ⭐ CENTREREN */
     }
 
+    /* ⭐ Mobielvriendelijk */
     @media (max-width: 600px) {
       body { padding: 1em; }
       form { padding: 1.2em; }
-      label { font-size: 1.3em; }
-      input, select, textarea { font-size: 1.3em; padding: 1.1em; }
-      button { font-size: 1.3em; padding: 1.1em; }
-      #status { font-size: 1.3em; }
+      label { font-size: 1.2em; }
+      input, select, textarea { font-size: 1.2em; padding: 1em; }
+      button { font-size: 1.2em; padding: 1em; }
+      #status { font-size: 1.2em; }
     }
   </style>
 </head>
@@ -118,8 +118,7 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
   e.preventDefault();
 
   const status = document.getElementById('status');
-  status.style.display = "none";   // ⭐ verbergen tot er tekst is
-  status.textContent = "";         // leegmaken
+  status.textContent = "";   // leegmaken
 
   const name = document.getElementById('deviceName').value.trim();
   const type = document.getElementById('typeRegistratie').value;
@@ -128,13 +127,11 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 
   if (!name) {
     status.textContent = "Naam is verplicht";
-    status.style.display = "block";
     return;
   }
 
   if (!type) {
     status.textContent = "Type is verplicht";
-    status.style.display = "block";
     return;
   }
 
@@ -164,7 +161,6 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 
   if (!lat || !lon) {
     status.textContent = "GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
-    status.style.display = "block";
   }
 
   await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
@@ -185,14 +181,10 @@ async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
   try {
     await fetch(`${url}?${params.toString()}`, { method: 'GET' });
 
-    const status = document.getElementById('status');
-    status.textContent = "Gegevens verstuurd";
-    status.style.display = "block";   // ⭐ pas tonen bij melding
+    document.getElementById('status').textContent = "Gegevens verstuurd";
 
   } catch (error) {
-    const status = document.getElementById('status');
-    status.textContent = "Fout bij verzenden";
-    status.style.display = "block";
+    document.getElementById('status').textContent = "Fout bij verzenden";
   }
 }
 </script>
