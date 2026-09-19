@@ -1,78 +1,58 @@
-<script>
-document.getElementById('logForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weidevogel registratie</title>
 
-  const name = document.getElementById('deviceName').value.trim();
-  const type = document.getElementById('typeRegistratie').value;
-  const note = document.getElementById('opmerkingen').value.trim();
-  const isoTime = new Date().toISOString();
-
-  if (!name) {
-    document.getElementById('status').textContent = "❌ Naam is verplicht";
-    return;
-  }
-
-  if (!type) {
-    document.getElementById('status').textContent = "❌ Type is verplicht";
-    return;
-  }
-
-  let attempts = 0;
-  let lat = null, lon = null, accuracy = null;
-
-  function getGPS() {
-    return new Promise(resolve => {
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos),
-        err => resolve(null),
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-      );
-    });
-  }
-
-  while (attempts < 3 && lat === null) {
-    const pos = await getGPS();
-    if (pos) {
-      lat = pos.coords.latitude;
-      lon = pos.coords.longitude;
-      accuracy = pos.coords.accuracy;
-
-      // ❗ Filter onzinwaarden
-      if (!accuracy || accuracy > 100) {
-        accuracy = "";
-      }
+  <style>
+    body { font-family: Arial; background: #f0f4f8; padding: 2em; }
+    form { background: #fff; padding: 1.5em; border-radius: 8px; max-width: 450px; margin: auto; }
+    input, select, textarea, button {
+      margin-top: 1em; width: 100%; padding: 0.7em; border-radius: 4px; border: 1px solid #ccc;
     }
-    attempts++;
-  }
+    button { background-color: #2980b9; color: white; border: none; cursor: pointer; }
 
-  if (!lat || !lon) {
-    document.getElementById('status').textContent =
-      "⚠️ GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
-  }
+    @media (max-width: 600px) {
+      input, select, textarea, button { font-size: 1.3em; padding: 1em; }
+      form { padding: 2em; }
+      label { font-size: 1.2em; }
+    }
+  </style>
+</head>
 
-  await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
-});
+<body>
 
-async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
-  const url = "JOUW_EXEC_URL_HIER";
+<h2 style="text-align:center;">Scanregistratie</h2>
 
-  const params = new URLSearchParams();
-  params.append("naam", name);
-  params.append("tijd", time);
-  params.append("locatie", lat && lon ? `${lat},${lon}` : "");
-  params.append("accuracy", accuracy || "");
-  params.append("type", type);
-  params.append("opmerkingen", note);
+<form id="logForm">
 
-  try {
-    await fetch(`${url}?${params.toString()}`, { method: 'GET' });
+  <label>Naam:
+    <input type="text" id="deviceName" required />
+  </label>
 
-    document.getElementById('status').textContent =
-      "✅ Gegevens verstuurd";
+  <label>Type registratie:
+    <select id="typeRegistratie" required>
+      <option value="">-- Kies type --</option>
+      <option value="Weidevogels">Weidevogels</option>
+      <option value="Reekalveren/hazen">Reekalveren/hazen</option>
+      <option value="Hoornaars">Hoornaars</option>
+      <option value="Overig">Overig</option>
+      <option value="Test">Test</option>
+    </select>
+  </label>
 
-  } catch (error) {
-    document.getElementById('status').textContent =
-      "❌ Fout bij verzenden";
-  }
-}
+  <label>Opmerkingen:
+    <textarea id="opmerkingen" rows="3"></textarea>
+  </label>
+
+  <button type="submit">Verstuur gegevens</button>
+</form>
+
+<p id="status"></p>
+
+<script>
+  // jouw volledige script komt hier
 </script>
+
+</body>
+</html>
