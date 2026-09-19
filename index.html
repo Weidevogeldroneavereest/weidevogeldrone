@@ -57,7 +57,7 @@
       background-color: #1f6a94;
     }
 
-    /* ⭐ Terugmelding gecentreerd */
+    /* ⭐ Meldingsbalk pas zichtbaar wanneer nodig */
     #status {
       margin-top: 1.5em;
       font-size: 1.2em;
@@ -69,9 +69,9 @@
       background: #eef2f5;
       border-left: 4px solid #2980b9;
       text-align: center;
+      display: none; /* ⭐ VERBERGEN TOT ER EEN MELDING IS */
     }
 
-    /* ⭐ Mobielvriendelijk */
     @media (max-width: 600px) {
       body { padding: 1em; }
       form { padding: 1.2em; }
@@ -118,7 +118,8 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
   e.preventDefault();
 
   const status = document.getElementById('status');
-  status.textContent = "";   // leegmaken
+  status.style.display = "none";   // ⭐ verbergen tot er tekst is
+  status.textContent = "";         // leegmaken
 
   const name = document.getElementById('deviceName').value.trim();
   const type = document.getElementById('typeRegistratie').value;
@@ -127,11 +128,13 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 
   if (!name) {
     status.textContent = "Naam is verplicht";
+    status.style.display = "block";
     return;
   }
 
   if (!type) {
     status.textContent = "Type is verplicht";
+    status.style.display = "block";
     return;
   }
 
@@ -161,6 +164,7 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 
   if (!lat || !lon) {
     status.textContent = "GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
+    status.style.display = "block";
   }
 
   await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
@@ -181,10 +185,14 @@ async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
   try {
     await fetch(`${url}?${params.toString()}`, { method: 'GET' });
 
-    document.getElementById('status').textContent = "Gegevens verstuurd";
+    const status = document.getElementById('status');
+    status.textContent = "Gegevens verstuurd";
+    status.style.display = "block";   // ⭐ pas tonen bij melding
 
   } catch (error) {
-    document.getElementById('status').textContent = "Fout bij verzenden";
+    const status = document.getElementById('status');
+    status.textContent = "Fout bij verzenden";
+    status.style.display = "block";
   }
 }
 </script>
