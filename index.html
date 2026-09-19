@@ -12,12 +12,6 @@
     }
     button { background-color: #2980b9; color: white; border: none; cursor: pointer; }
 
-    @media (max-width: 600px) {
-      input, select, textarea, button { font-size: 1.3em; padding: 1em; }
-      form { padding: 2em; }
-      label { font-size: 1.2em; }
-    }
-
     #status {
       text-align: center;
       margin-top: 1.5em;
@@ -139,6 +133,8 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 });
 
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
+
+  /* ⭐ JOUW EXACTE URL */
   const url = "https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec";
 
   const params = new URLSearchParams();
