@@ -12,10 +12,45 @@
     }
     button { background-color: #2980b9; color: white; border: none; cursor: pointer; }
 
+    /* ✔ Mobielvriendelijke velden */
     @media (max-width: 600px) {
       input, select, textarea, button { font-size: 1.3em; padding: 1em; }
       form { padding: 2em; }
       label { font-size: 1.2em; }
+    }
+
+    /* ✔ Gecentreerde banner */
+    #status {
+      text-align: center;
+      margin-top: 1.5em;
+      font-size: 1.3em;
+      padding: 0.8em;
+      border-radius: 6px;
+      display: none; /* pas tonen wanneer nodig */
+    }
+
+    /* ✔ Groene succesbanner */
+    #status.success {
+      background-color: #d4f8d4;
+      color: #0a7a0a;
+      border: 1px solid #0a7a0a;
+      display: block;
+    }
+
+    /* ✔ Rode foutbanner */
+    #status.error {
+      background-color: #f8d4d4;
+      color: #7a0a0a;
+      border: 1px solid #7a0a0a;
+      display: block;
+    }
+
+    /* ✔ Gele waarschuwing (GPS niet beschikbaar) */
+    #status.warning {
+      background-color: #fff4c2;
+      color: #7a6a00;
+      border: 1px solid #7a6a00;
+      display: block;
     }
   </style>
 </head>
@@ -54,157 +89,4 @@
 document.getElementById('logForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  const name = document.getElementById('deviceName').value.trim();
-  const type = document.getElementById('typeRegistratie').value;
-  const note = document.getElementById('opmerkingen').value.trim();
-  const isoTime = new Date().toISOString();
-
-  if (!name) {
-    document.getElementById('status').textContent = "❌ Naam is verplicht";
-    return;
-  }
-
-  if (!type) {
-    document.getElementById('status').textContent = "❌ Type is verplicht";
-    return;
-  }
-
-  let attempts = 0;
-  let lat = null, lon = null, accuracy = null;
-
-  function getGPS() {
-    return new Promise(resolve => {
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos),
-        err => resolve(null),
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-      );
-    });
-  }
-
-  while (attempts < 3 && lat === null) {
-    const pos = await getGPS();
-    if (pos) {
-      lat = pos.coords.latitude;
-      lon = pos.coords.longitude;
-      accuracy = pos.coords.accuracy;
-
-      // ❗ Filter onzinwaarden
-      if (!accuracy || accuracy > 100) {
-        accuracy = "";
-      }
-    }
-    attempts++;
-  }
-
-  if (!lat || !lon) {
-    document.getElementById('status').textContent =
-      "⚠️ GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
-  }
-
-  await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
-});
-
-async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
-  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
-
-  const params = new URLSearchParams();
-  params.append("naam", name);
-  params.append("tijd", time);
-  params.append("locatie", lat && lon ? `${lat},${lon}` : "");
-  params.append("accuracy", accuracy || "");
-  params.append("type", type);
-  params.append("opmerkingen", note);
-
-  try {
-    await fetch(`${url}?${params.toString()}`, { method: 'GET' });
-
-    document.getElementById('status').textContent =
-      "✅ Gegevens verstuurd";
-
-  } catch (error) {
-    document.getElementById('status').textContent =
-      "❌ Fout bij verzenden";
-  }
-}
-</script>
-<script>
-document.getElementById('logForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const name = document.getElementById('deviceName').value.trim();
-  const type = document.getElementById('typeRegistratie').value;
-  const note = document.getElementById('opmerkingen').value.trim();
-  const isoTime = new Date().toISOString();
-
-  if (!name) {
-    document.getElementById('status').textContent = "❌ Naam is verplicht";
-    return;
-  }
-
-  if (!type) {
-    document.getElementById('status').textContent = "❌ Type is verplicht";
-    return;
-  }
-
-  let attempts = 0;
-  let lat = null, lon = null, accuracy = null;
-
-  function getGPS() {
-    return new Promise(resolve => {
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos),
-        err => resolve(null),
-        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-      );
-    });
-  }
-
-  while (attempts < 3 && lat === null) {
-    const pos = await getGPS();
-    if (pos) {
-      lat = pos.coords.latitude;
-      lon = pos.coords.longitude;
-      accuracy = pos.coords.accuracy;
-
-      if (!accuracy || accuracy > 100) {
-        accuracy = "";
-      }
-    }
-    attempts++;
-  }
-
-  if (!lat || !lon) {
-    document.getElementById('status').textContent =
-      "⚠️ GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
-  }
-
-  await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
-});
-
-async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
-  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
-
-  const params = new URLSearchParams();
-  params.append("naam", name);
-  params.append("tijd", time);
-  params.append("locatie", lat && lon ? `${lat},${lon}` : "");
-  params.append("accuracy", accuracy || "");
-  params.append("type", type);
-  params.append("opmerkingen", note);
-
-  try {
-    await fetch(`${url}?${params.toString()}`, { method: 'GET' });
-
-    document.getElementById('status').textContent =
-      "✅ Gegevens verstuurd";
-
-  } catch (error) {
-    document.getElementById('status').textContent =
-      "❌ Fout bij verzenden";
-  }
-}
-</script>
-
-</body>
-</html>
+  const status = document.getElementById('
