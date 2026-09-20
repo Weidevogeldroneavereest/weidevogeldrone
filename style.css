@@ -52,7 +52,7 @@ button:hover {
 
 /* ⭐ Meldingsbalk pas zichtbaar wanneer nodig */
 #status {
-  display: none;
+  display: none;            /* volledig onzichtbaar */
   margin-top: 1.5em;
   font-size: 1.2em;
   padding: 0.8em;
@@ -63,7 +63,7 @@ button:hover {
   text-align: center;
 }
 
-/* ⭐ Styling pas zichtbaar wanneer er een melding is */
+/* styling pas actief wanneer zichtbaar */
 #status.visible {
   display: block;
   background: #eef2f5;
