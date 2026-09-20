@@ -1,42 +1,244 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <title>Weidevogel registratie</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veldregistratie</title>
+<style>
+  :root {
+    --moss: #3b5d3a;
+    --moss-dark: #2a4429;
+    --clay: #8a6d4b;
+    --paper: #f6f3ec;
+    --ink: #232620;
+    --line: #d8d2c2;
+    --error: #a4392b;
+    --ok: #3b5d3a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+    padding: 32px 20px 48px;
+  }
+  header {
+    margin-bottom: 28px;
+  }
+  header .eyebrow {
+    font-size: 13px;
+    color: var(--clay);
+    letter-spacing: 0.02em;
+  }
+  h1 {
+    font-size: 26px;
+    line-height: 1.2;
+    margin: 4px 0 0;
+    font-weight: 600;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--moss-dark);
+  }
+  input[type="text"],
+  select,
+  textarea {
+    width: 100%;
+    font-size: 16px;
+    font-family: inherit;
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  input[type="text"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid var(--moss);
+    outline-offset: 1px;
+  }
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--moss) 50%), linear-gradient(135deg, var(--moss) 50%, transparent 50%);
+    background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  button {
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 15px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--moss);
+    color: #fff;
+    cursor: pointer;
+  }
+  button:active { background: var(--moss-dark); }
+  button:disabled {
+    background: #9aa89a;
+    cursor: default;
+  }
+  .status {
+    margin-top: 16px;
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.pending { background: #eee7d4; color: #6b5a2b; }
+  .status.ok { background: #e4ede2; color: var(--ok); }
+  .status.err { background: #f3e0dc; color: var(--error); }
+  .hint {
+    font-size: 12px;
+    color: #6b6a63;
+    margin-top: 4px;
+  }
+</style>
 </head>
-
 <body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Natuurwaarneming</div>
+    <h1>Veldregistratie</h1>
+  </header>
 
-<h2>Scanregistratie</h2>
+  <form id="regForm">
+    <div>
+      <label for="naam">Naam</label>
+      <input type="text" id="naam" name="naam" required autocomplete="name">
+    </div>
 
-<form id="logForm">
+    <div>
+      <label for="type">Type registratie</label>
+      <select id="type" name="type" required>
+        <option value="" disabled selected>Kies een type</option>
+        <option value="Weidevogels">Weidevogels</option>
+        <option value="Reekalveren/Hazen">Reekalveren/Hazen</option>
+        <option value="Hoornaars">Hoornaars</option>
+        <option value="Overig">Overig</option>
+        <option value="Test">Test</option>
+      </select>
+    </div>
 
-  <label>Naam:
-    <input type="text" id="deviceName" required />
-  </label>
+    <div>
+      <label for="opmerkingen">Opmerkingen</label>
+      <textarea id="opmerkingen" name="opmerkingen" placeholder="Eventuele toelichting..."></textarea>
+    </div>
 
-  <label>Type registratie:
-    <select id="typeRegistratie" required>
-      <option value="">-- Kies type --</option>
-      <option value="Weidevogels">Weidevogels</option>
-      <option value="Reekalveren/hazen">Reekalveren/hazen</option>
-      <option value="Hoornaars">Hoornaars</option>
-      <option value="Overig">Overig</option>
-      <option value="Test">Test</option>
-    </select>
-  </label>
+    <button type="submit" id="submitBtn">Verstuur gegevens</button>
+    <div class="hint">Bij versturen wordt je GPS-locatie opgevraagd.</div>
+    <div class="status" id="status"></div>
+  </form>
+</div>
 
-  <label>Opmerkingen:
-    <textarea id="opmerkingen" rows="3"></textarea>
-  </label>
+<script>
+  // Vul hier de URL in die je krijgt na het deployen van het Google Apps Script als web app.
+  const SCRIPT_URL = "PLAK_HIER_JE_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
 
-  <button type="submit">Verstuur gegevens</button>
-</form>
+  const form = document.getElementById('regForm');
+  const statusEl = document.getElementById('status');
+  const submitBtn = document.getElementById('submitBtn');
 
-<p id="status"></p>
+  function setStatus(kind, text) {
+    statusEl.className = 'status show ' + kind;
+    statusEl.textContent = text;
+  }
 
-<script src="script.js"></script>
+  function getLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocatie wordt niet ondersteund door deze browser.'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve(pos),
+        err => reject(err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    });
+  }
 
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (SCRIPT_URL.indexOf('PLAK_HIER') === 0) {
+      setStatus('err', 'SCRIPT_URL is nog niet ingesteld in index.html.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    setStatus('pending', 'Locatie ophalen...');
+
+    let position;
+    try {
+      position = await getLocation();
+    } catch (err) {
+      setStatus('err', 'Kon locatie niet ophalen: ' + err.message + '. Controleer of locatietoegang is toegestaan.');
+      submitBtn.disabled = false;
+      return;
+    }
+
+    const now = new Date();
+    const datum = now.toLocaleDateString('nl-NL');
+    const tijd = now.toLocaleTimeString('nl-NL');
+
+    const payload = {
+      naam: document.getElementById('naam').value.trim(),
+      type: document.getElementById('type').value,
+      opmerkingen: document.getElementById('opmerkingen').value.trim(),
+      datum: datum,
+      tijd: tijd,
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+      accuracy: position.coords.accuracy
+    };
+
+    setStatus('pending', 'Gegevens versturen...');
+
+    try {
+      // no-cors: we kunnen het antwoord niet uitlezen, maar het verzoek komt aan.
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      setStatus('ok', 'Gegevens verstuurd. Bedankt!');
+      form.reset();
+    } catch (err) {
+      setStatus('err', 'Versturen mislukt: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
 </body>
 </html>
