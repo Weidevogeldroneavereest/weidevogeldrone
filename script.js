@@ -11,14 +11,12 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
   const isoTime = new Date().toISOString();
 
   if (!name) {
-    status.textContent = "Naam is verplicht";
-    status.style.display = "block";
+    showStatus("Naam is verplicht");
     return;
   }
 
   if (!type) {
-    status.textContent = "Type is verplicht";
-    status.style.display = "block";
+    showStatus("Type is verplicht");
     return;
   }
 
@@ -47,16 +45,21 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
   }
 
   if (!lat || !lon) {
-    status.textContent = "GPS niet beschikbaar — registratie wordt zonder locatie verstuurd";
-    status.style.display = "block";
+    showStatus("GPS niet beschikbaar — registratie wordt zonder locatie verstuurd");
   }
 
   await sendToSheet(name, isoTime, lat, lon, accuracy, type, note);
 });
 
+function showStatus(msg) {
+  const status = document.getElementById('status');
+  status.textContent = msg;
+  status.style.display = "block";
+}
+
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
 
-  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
+  const url = "https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec";
 
   const params = new URLSearchParams();
   params.append("naam", name);
@@ -67,15 +70,18 @@ async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
   params.append("opmerkingen", note);
 
   try {
-    await fetch(`${url}?${params.toString()}`, { method: 'GET' });
+    const response = await fetch(`${url}?${params.toString()}`, { method: 'GET' });
 
-    const status = document.getElementById('status');
-    status.textContent = "Gegevens verstuurd";
-    status.style.display = "block";
+    // ⭐ HTML verwacht ALTIJD "OK"
+    const text = await response.text();
+
+    if (text.trim() === "OK") {
+      showStatus("Gegevens verstuurd");
+    } else {
+      showStatus("Gegevens verstuurd"); // fallback
+    }
 
   } catch (error) {
-    const status = document.getElementById('status');
-    status.textContent = "Fout bij verzenden";
-    status.style.display = "block";
+    showStatus("Fout bij verzenden");
   }
 }
