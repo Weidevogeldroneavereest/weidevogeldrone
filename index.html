@@ -1,244 +1,127 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Veldregistratie</title>
-<style>
-  :root {
-    --moss: #3b5d3a;
-    --moss-dark: #2a4429;
-    --clay: #8a6d4b;
-    --paper: #f6f3ec;
-    --ink: #232620;
-    --line: #d8d2c2;
-    --error: #a4392b;
-    --ok: #3b5d3a;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  body {
-    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-  }
-  .wrap {
-    width: 100%;
-    max-width: 480px;
-    padding: 32px 20px 48px;
-  }
-  header {
-    margin-bottom: 28px;
-  }
-  header .eyebrow {
-    font-size: 13px;
-    color: var(--clay);
-    letter-spacing: 0.02em;
-  }
-  h1 {
-    font-size: 26px;
-    line-height: 1.2;
-    margin: 4px 0 0;
-    font-weight: 600;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--moss-dark);
-  }
-  input[type="text"],
-  select,
-  textarea {
-    width: 100%;
-    font-size: 16px;
-    font-family: inherit;
-    padding: 13px 14px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--ink);
-  }
-  input[type="text"]:focus,
-  select:focus,
-  textarea:focus {
-    outline: 2px solid var(--moss);
-    outline-offset: 1px;
-  }
-  textarea {
-    min-height: 90px;
-    resize: vertical;
-  }
-  select {
-    appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--moss) 50%), linear-gradient(135deg, var(--moss) 50%, transparent 50%);
-    background-position: calc(100% - 20px) center, calc(100% - 15px) center;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
-  }
-  button {
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: 600;
-    padding: 15px 18px;
-    border: none;
-    border-radius: 8px;
-    background: var(--moss);
-    color: #fff;
-    cursor: pointer;
-  }
-  button:active { background: var(--moss-dark); }
-  button:disabled {
-    background: #9aa89a;
-    cursor: default;
-  }
-  .status {
-    margin-top: 16px;
-    font-size: 14px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    display: none;
-  }
-  .status.show { display: block; }
-  .status.pending { background: #eee7d4; color: #6b5a2b; }
-  .status.ok { background: #e4ede2; color: var(--ok); }
-  .status.err { background: #f3e0dc; color: var(--error); }
-  .hint {
-    font-size: 12px;
-    color: #6b6a63;
-    margin-top: 4px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Weidevogeldrone Scan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 2em;
+    }
+    form {
+      background: #fff;
+      padding: 1.5em;
+      border-radius: 8px;
+      max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      margin-top: 1em;
+      width: 100%;
+      padding: 0.7em;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="eyebrow">Natuurwaarneming</div>
-    <h1>Veldregistratie</h1>
-  </header>
-
-  <form id="regForm">
-    <div>
-      <label for="naam">Naam</label>
-      <input type="text" id="naam" name="naam" required autocomplete="name">
-    </div>
-
-    <div>
-      <label for="type">Type registratie</label>
-      <select id="type" name="type" required>
-        <option value="" disabled selected>Kies een type</option>
-        <option value="Weidevogels">Weidevogels</option>
-        <option value="Reekalveren/Hazen">Reekalveren/Hazen</option>
-        <option value="Hoornaars">Hoornaars</option>
-        <option value="Overig">Overig</option>
-        <option value="Test">Test</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="opmerkingen">Opmerkingen</label>
-      <textarea id="opmerkingen" name="opmerkingen" placeholder="Eventuele toelichting..."></textarea>
-    </div>
-
-    <button type="submit" id="submitBtn">Verstuur gegevens</button>
-    <div class="hint">Bij versturen wordt je GPS-locatie opgevraagd.</div>
-    <div class="status" id="status"></div>
+  <h2>Scanregistratie</h2>
+  <form id="logForm">
+    <label>Naam:
+      <input type="text" id="deviceName" required />
+    </label>
+    <button type="submit">Verstuur gegevens</button>
   </form>
-</div>
+  <p id="status"></p>
 
-<script>
-  // Vul hier de URL in die je krijgt na het deployen van het Google Apps Script als web app.
-  const SCRIPT_URL = "PLAK_HIER_JE_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+  <script>
+    document.getElementById('logForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-  const form = document.getElementById('regForm');
-  const statusEl = document.getElementById('status');
-  const submitBtn = document.getElementById('submitBtn');
+      const name = document.getElementById('deviceName').value;
+      const isoTime = new Date().toISOString();
+      let lat = '', lon = '';
 
-  function setStatus(kind, text) {
-    statusEl.className = 'status show ' + kind;
-    statusEl.textContent = text;
-  }
-
-  function getLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocatie wordt niet ondersteund door deze browser.'));
-        return;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+          await sendToSheet(name, isoTime, lat, lon);
+        }, () => {
+          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
+          sendToSheet(name, isoTime, '', '');
+        });
+      } else {
+        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+        sendToSheet(name, isoTime, '', '');
       }
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos),
-        err => reject(err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
     });
-  }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    async function sendToSheet(name, time, lat, lon) {
+      const url = 'https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec';
 
-    if (SCRIPT_URL.indexOf('PLAK_HIER') === 0) {
-      setStatus('err', 'SCRIPT_URL is nog niet ingesteld in index.html.');
-      return;
+      const payload = {
+        naam: name,
+        tijd: time,
+        locatie: lat && lon ? `${lat}, ${lon}` : ''
+      };
+
+
+      const params = new URLSearchParams();
+      params.append("naam", name);
+      params.append("tijd", time);
+      params.append("locatie", lat && lon ? `${lat},${lon}` : '');
+
+      // GET request sent to https://example.org/login?username=example
+      
+      try { 
+      const response = await fetch(`${url}?${params}`, {
+          method: 'GET',
+          mode: 'no-cors',
+          headers: {
+              'X-Fetch-Location': 'true',
+              'Accept': 'text/html'
+          }
+          });
+        if (response.ok != 0) {
+          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+          //document.getElementById('status').textContent = `Response status: ${response.status} Response message: ${response.message}`;
+        } else {
+          document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+          //document.getElementById('status').textContent = `OK: ${response.status};`
+        }
+      } catch (error) {
+          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+          //document.getElementById('status').textContent = `Error message: ${error.message}`;
+      }
+
+      
+
+/*
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        document.getElementById('status').textContent = '✅ Gegevens verstuurd: name: ' + name + ' time: ' + time + ' lat: ' + lat + ' lon: ' + lon;
+      } catch (error) {
+        document.getElementById('status').textContent = '❌ Fout bij verzenden' + error;
+      }
+*/
     }
-
-    submitBtn.disabled = true;
-    setStatus('pending', 'Locatie ophalen...');
-
-    let position;
-    try {
-      position = await getLocation();
-    } catch (err) {
-      setStatus('err', 'Kon locatie niet ophalen: ' + err.message + '. Controleer of locatietoegang is toegestaan.');
-      submitBtn.disabled = false;
-      return;
-    }
-
-    const now = new Date();
-    const datum = now.toLocaleDateString('nl-NL');
-    const tijd = now.toLocaleTimeString('nl-NL');
-
-    const payload = {
-      naam: document.getElementById('naam').value.trim(),
-      type: document.getElementById('type').value,
-      opmerkingen: document.getElementById('opmerkingen').value.trim(),
-      datum: datum,
-      tijd: tijd,
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-      accuracy: position.coords.accuracy
-    };
-
-    setStatus('pending', 'Gegevens versturen...');
-
-    try {
-      // no-cors: we kunnen het antwoord niet uitlezen, maar het verzoek komt aan.
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-      setStatus('ok', 'Gegevens verstuurd. Bedankt!');
-      form.reset();
-    } catch (err) {
-      setStatus('err', 'Versturen mislukt: ' + err.message);
-    } finally {
-      submitBtn.disabled = false;
-    }
-  });
-</script>
+  </script>
 </body>
 </html>
