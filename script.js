@@ -56,7 +56,7 @@ function hideStatus() {
 
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
 
-  const url = "https://script.google.com/macros/s/AKfycbvVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH949KFa6w4D-bOcU/exec";
+  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
 
   const params = new URLSearchParams();
   params.append("naam", name);
