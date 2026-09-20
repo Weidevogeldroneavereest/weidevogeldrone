@@ -2,23 +2,15 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
   e.preventDefault();
 
   const status = document.getElementById('status');
-  status.style.display = "none";
-  status.textContent = "";
+  hideStatus();
 
   const name = document.getElementById('deviceName').value.trim();
   const type = document.getElementById('typeRegistratie').value;
   const note = document.getElementById('opmerkingen').value.trim();
   const isoTime = new Date().toISOString();
 
-  if (!name) {
-    showStatus("Naam is verplicht");
-    return;
-  }
-
-  if (!type) {
-    showStatus("Type is verplicht");
-    return;
-  }
+  if (!name) return showStatus("Naam is verplicht");
+  if (!type) return showStatus("Type is verplicht");
 
   let attempts = 0;
   let lat = null, lon = null, accuracy = null;
@@ -54,12 +46,18 @@ document.getElementById('logForm').addEventListener('submit', async function(e) 
 function showStatus(msg) {
   const status = document.getElementById('status');
   status.textContent = msg;
-  status.style.display = "block";
+  status.classList.add("visible");
+}
+
+function hideStatus() {
+  const status = document.getElementById('status');
+  status.textContent = "";
+  status.classList.remove("visible");
 }
 
 async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
 
-  const url = "https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec";
+  const url = "https://script.google.com/macros/s/AKfycbyVRTQro8syS_MB2Pw3Tt3nbW8bS4EpmjiFfPUZ8tZGqewnW1_EH94gKFa6w4D-bOcU/exec";
 
   const params = new URLSearchParams();
   params.append("naam", name);
@@ -71,14 +69,12 @@ async function sendToSheet(name, time, lat, lon, accuracy, type, note) {
 
   try {
     const response = await fetch(`${url}?${params.toString()}`, { method: 'GET' });
-
-    // ⭐ HTML verwacht ALTIJD "OK"
     const text = await response.text();
 
     if (text.trim() === "OK") {
       showStatus("Gegevens verstuurd");
     } else {
-      showStatus("Gegevens verstuurd"); // fallback
+      showStatus("Gegevens verstuurd");
     }
 
   } catch (error) {
