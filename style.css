@@ -52,6 +52,7 @@ button:hover {
 
 /* ⭐ Meldingsbalk pas zichtbaar wanneer nodig */
 #status {
+  display: none; /* volledig onzichtbaar */
   margin-top: 1.5em;
   font-size: 1.2em;
   padding: 0.8em;
@@ -59,11 +60,13 @@ button:hover {
   max-width: 450px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
+
+  /* styling pas zichtbaar wanneer display:block */
   background: #eef2f5;
   border-left: 4px solid #2980b9;
-  text-align: center;
-  display: none;
 }
+
 
 /* ⭐ Mobielvriendelijk */
 @media (max-width: 600px) {
