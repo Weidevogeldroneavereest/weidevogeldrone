@@ -1,64 +1,130 @@
-<form id="logForm">
-  <h2>Scanregistratie</h2>
-  <label>Naam:
-    <input type="text" id="deviceName" required />
-  </label>
-  <label>Opmerkingen:
-    <textarea id="opmerkingen" placeholder="Vrije tekst..."></textarea>
-  </label>
-  <button type="submit">Verstuur gegevens</button>
-  <p id="status"></p>
-</form>
-
-<script>
-  document.getElementById('logForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById('deviceName').value;
-    const opmerkingen = document.getElementById('opmerkingen').value;
-    const isoTime = new Date().toISOString();
-    let lat = '', lon = '';
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async position => {
-        lat = position.coords.latitude;
-        lon = position.coords.longitude;
-        await sendToSheet(name, isoTime, lat, lon, opmerkingen);
-      }, () => {
-        document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
-        sendToSheet(name, isoTime, '', '', opmerkingen);
-      });
-    } else {
-      document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
-      sendToSheet(name, isoTime, '', '', opmerkingen);
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weidevogeldrone Scan</title>
+  <style>
+    * {
+      box-sizing: border-box;
     }
-  });
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      min-height: 100vh;
+      padding: 1.5em;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    form {
+      background: #fff;
+      padding: 1.5em;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 1em;
+      font-weight: bold;
+    }
+    input, textarea, button {
+      margin-top: 0.4em;
+      width: 100%;
+      padding: 0.7em;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      font-size: 1em;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 5em;
+    }
+    button {
+      margin-top: 1.4em;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 1em;
+      font-weight: bold;
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <form id="logForm">
+    <h2>Scanregistratie</h2>
+    <label>Naam:
+      <input type="text" id="deviceName" required />
+    </label>
+    <label>Opmerkingen:
+      <textarea id="opmerkingen" placeholder="Vrije tekst..."></textarea>
+    </label>
+    <button type="submit">Verstuur gegevens</button>
+    <p id="status"></p>
+  </form>
 
-  async function sendToSheet(name, time, lat, lon, opmerkingen) {
-    const url = 'https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec';
+  <script>
+    document.getElementById('logForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    const params = new URLSearchParams();
-    params.append("naam", name);
-    params.append("tijd", time);
-    params.append("locatie", lat && lon ? `${lat},${lon}` : '');
-    params.append("opmerkingen", opmerkingen);
+      const name = document.getElementById('deviceName').value;
+      const opmerkingen = document.getElementById('opmerkingen').value;
+      const isoTime = new Date().toISOString();
+      let lat = '', lon = '';
 
-    try {
-      const response = await fetch(`${url}?${params}`, {
-        method: 'GET',
-        mode: 'no-cors',
-        headers: {
-          'X-Fetch-Location': 'true',
-          'Accept': 'text/html'
-        }
-      });
-      if (response.ok != 0) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+          await sendToSheet(name, isoTime, lat, lon, opmerkingen);
+        }, () => {
+          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
+          sendToSheet(name, isoTime, '', '', opmerkingen);
+        });
       } else {
-        document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+        sendToSheet(name, isoTime, '', '', opmerkingen);
       }
-    } catch (error) {
-      document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + error;
+    });
+
+    async function sendToSheet(name, time, lat, lon, opmerkingen) {
+      const url = 'https://script.google.com/macros/s/AKfycbx_DvRgRYlYvMbqOIHaii_AYeWGpwElqVOgA0OmK9Efa80Cb3yz0GLZx02eAqq1Qa1b/exec';
+
+      const params = new URLSearchParams();
+      params.append("naam", name);
+      params.append("tijd", time);
+      params.append("locatie", lat && lon ? `${lat},${lon}` : '');
+      params.append("opmerkingen", opmerkingen);
+
+      try {
+        const response = await fetch(`${url}?${params}`, {
+          method: 'GET',
+          mode: 'no-cors',
+          headers: {
+            'X-Fetch-Location': 'true',
+            'Accept': 'text/html'
+          }
+        });
+        if (response.ok != 0) {
+          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+        } else {
+          document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+        }
+      } catch (error) {
+        document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + error;
+      }
     }
-  }
-</script>
+  </script>
+</body>
+</html>
