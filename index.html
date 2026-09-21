@@ -51,6 +51,10 @@
       border: none;
       cursor: pointer;
     }
+    button:disabled {
+      background-color: #90b8d1;
+      cursor: not-allowed;
+    }
     #status {
       margin-top: 1em;
       font-weight: bold;
@@ -58,6 +62,24 @@
     }
     h2 {
       text-align: center;
+    }
+
+    /* Zandloper / spinner */
+    .spinner {
+      display: none;
+      margin: 1em auto 0;
+      width: 28px;
+      height: 28px;
+      border: 4px solid #cfe0ec;
+      border-top: 4px solid #2980b9;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .spinner.actief {
+      display: block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -70,11 +92,27 @@
     <label>Opmerkingen:
       <textarea id="opmerkingen" placeholder="Vrije tekst..."></textarea>
     </label>
-    <button type="submit">Verstuur gegevens</button>
+    <button type="submit" id="submitBtn">Verstuur gegevens</button>
+    <div class="spinner" id="spinner"></div>
     <p id="status"></p>
   </form>
 
   <script>
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const statusEl = document.getElementById('status');
+
+    function toonLaden() {
+      spinner.classList.add('actief');
+      submitBtn.disabled = true;
+      statusEl.textContent = '';
+    }
+
+    function verbergLaden() {
+      spinner.classList.remove('actief');
+      submitBtn.disabled = false;
+    }
+
     document.getElementById('logForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -83,17 +121,19 @@
       const isoTime = new Date().toISOString();
       let lat = '', lon = '';
 
+      toonLaden();
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async position => {
           lat = position.coords.latitude;
           lon = position.coords.longitude;
           await sendToSheet(name, isoTime, lat, lon, opmerkingen);
         }, () => {
-          document.getElementById('status').textContent = '📍 Locatie niet beschikbaar';
+          statusEl.textContent = '📍 Locatie niet beschikbaar';
           sendToSheet(name, isoTime, '', '', opmerkingen);
         });
       } else {
-        document.getElementById('status').textContent = '🌐 Geolocatie niet ondersteund';
+        statusEl.textContent = '🌐 Geolocatie niet ondersteund';
         sendToSheet(name, isoTime, '', '', opmerkingen);
       }
     });
@@ -117,12 +157,14 @@
           }
         });
         if (response.ok != 0) {
-          document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + response.status;
+          statusEl.textContent = '❌ Fout bij verzenden: ' + response.status;
         } else {
-          document.getElementById('status').textContent = '✅ Gegevens verstuurd';
+          statusEl.textContent = '✅ Gegevens verstuurd';
         }
       } catch (error) {
-        document.getElementById('status').textContent = '❌ Fout bij verzenden: ' + error;
+        statusEl.textContent = '❌ Fout bij verzenden: ' + error;
+      } finally {
+        verbergLaden();
       }
     }
   </script>
